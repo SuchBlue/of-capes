@@ -27,23 +27,21 @@ public abstract class SkinOptionsScreenMixin extends GameOptionsScreen {
 	// and there should be little harm in using a hardcoded string in english.
 	private final Text changeBtnText = Text.of("Open Cape Editor");
 
-	@Inject(
-		at = @At("TAIL"),
-		method = "init()V")
-	public void iTInject(CallbackInfo info) {
+	@Inject(at = @At("TAIL"), method = "addOptions")
+	public void addOptions(CallbackInfo info) {
 		ButtonWidget btn = ButtonWidget.builder(changeBtnText, button -> {
 					BigInteger intA = new BigInteger(128, new Random());
 					BigInteger intB = new BigInteger(128, new Random(System.identityHashCode(new Object())));
 					String serverId = intA.xor(intB).toString(16);
-					String url = String.format("https://optifine.net/capeChange?u=%s&n=%s&s=%s", this.client.getSession().getUuid(), this.client.getSession().getUsername(), serverId);
-					if(url == null) {
-						button.active = false;
-						return;
-					}
-					Util.getOperatingSystem().open(url);
+                    assert this.client != null;
+					assert this.client.getSession().getUuidOrNull() != null;
+                    String url = String.format("https://optifine.net/capeChange?u=%s&n=%s&s=%s", this.client.getSession().getUuidOrNull(), this.client.getSession().getUsername(), serverId);
+                    Util.getOperatingSystem().open(url);
 				})
-				.dimensions(this.width - 155, this.height - 25, 150, 20)
+				//.dimensions(this.width, this.height, 150, 20)
 				.build();
+		btn.setX(5);
+		btn.setY(5);
 		this.addDrawableChild(btn);
 	}
 }

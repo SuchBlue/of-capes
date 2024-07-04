@@ -1,45 +1,42 @@
 package net.drago.ofcapes.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import net.drago.ofcapes.util.PlayerHandler;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.util.SkinTextures;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Map;
 
 @Mixin(PlayerListEntry.class)
 public class PlayerListEntryMixin {
     @Shadow
     @Final
     private GameProfile profile;
-    @Shadow
-    @Final
-    private Map<MinecraftProfileTexture.Type, Identifier> textures;
     private boolean loadedCapeTexture = false;
+    private Identifier identifier;
 
-    @Inject(method = "getCapeTexture", at = @At("HEAD"))
-    private void injectedCapeTexture(CallbackInfoReturnable<Identifier> cir) {
+    @ModifyReturnValue(method = "getSkinTextures", at = @At("TAIL"))
+    protected SkinTextures changeCapeTexture(SkinTextures original) {
         fetchCapeTexture();
-    }
-
-    @Inject(method = "getElytraTexture", at = @At("HEAD"))
-    private void injectedElytraTexture(CallbackInfoReturnable<Identifier> cir) {
-        fetchCapeTexture();
+        return new SkinTextures(
+                original.texture(),
+                null,
+                identifier == null ? original.capeTexture() : identifier,
+                identifier == null ? original.elytraTexture() : identifier,
+                original.model(),
+                true
+        );
     }
 
     private void fetchCapeTexture() {
         if (loadedCapeTexture) return;
         loadedCapeTexture = true;
-        Map<MinecraftProfileTexture.Type, Identifier> textures = this.textures;
         PlayerHandler.loadPlayerCape(this.profile, id -> {
-            textures.put(MinecraftProfileTexture.Type.CAPE, id);
+            this.identifier = id;
         });
     }
 }
