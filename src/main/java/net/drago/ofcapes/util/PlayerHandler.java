@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,9 +38,9 @@ public class PlayerHandler {
 
     public static NativeImageBackedTexture getCapeFromURL(String capeStringURL) {
         try {
-            URL capeURL = new URL(capeStringURL);
+            URL capeURL = new URI(capeStringURL).toURL();
             return getCapeFromStream(capeURL.openStream());
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }
