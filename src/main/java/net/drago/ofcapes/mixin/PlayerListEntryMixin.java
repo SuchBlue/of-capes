@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(PlayerListEntry.class)
+@Mixin(value = PlayerListEntry.class, priority = 2000)
 public class PlayerListEntryMixin {
     @Shadow
     @Final
