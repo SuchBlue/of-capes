@@ -5,8 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [],
   "client": [
-    "PlayerListEntryMixin",
-    "CapeFeatureRendererMixin"
+    "PlayerListEntryMixin"
   ],
   "injectors": {
     "defaultRequire": 1
