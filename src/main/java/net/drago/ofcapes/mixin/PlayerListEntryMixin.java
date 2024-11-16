@@ -27,11 +27,11 @@ public class PlayerListEntryMixin {
         fetchCapeTexture();
         return new SkinTextures(
                 original.texture(),
-                null,
+                original.textureUrl(),
                 identifier == null ? original.capeTexture() : identifier,
                 identifier == null ? original.elytraTexture() : identifier,
                 original.model(),
-                true
+                original.secure()
         );
     }
 
@@ -39,8 +39,6 @@ public class PlayerListEntryMixin {
     private void fetchCapeTexture() {
         if (loadedCapeTexture) return;
         loadedCapeTexture = true;
-        PlayerHandler.loadPlayerCape(this.profile, id -> {
-            this.identifier = id;
-        });
+        PlayerHandler.loadPlayerCape(this.profile, id -> this.identifier = id);
     }
 }
