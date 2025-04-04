@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(value = PlayerListEntry.class, priority = 2000)
+@Mixin(value = PlayerListEntry.class)
 public class PlayerListEntryMixin {
     @Shadow
     @Final
@@ -24,7 +24,7 @@ public class PlayerListEntryMixin {
 
     @ModifyReturnValue(method = "getSkinTextures", at = @At("TAIL"))
     protected SkinTextures changeCapeTexture(SkinTextures original) {
-        fetchCapeTexture();
+        if(!loadedCapeTexture) fetchCapeTexture();
         return new SkinTextures(
                 original.texture(),
                 original.textureUrl(),
@@ -37,7 +37,6 @@ public class PlayerListEntryMixin {
 
     @Unique
     private void fetchCapeTexture() {
-        if (loadedCapeTexture) return;
         loadedCapeTexture = true;
         PlayerHandler.loadPlayerCape(this.profile, id -> this.identifier = id);
     }
