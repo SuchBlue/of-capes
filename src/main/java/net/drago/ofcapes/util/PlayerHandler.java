@@ -22,8 +22,8 @@ public class PlayerHandler {
 
     public static void loadPlayerCape(GameProfile player, ReturnCapeTexture response) {
         try {
-            String uuid = player.getId().toString();
-            URL capeURL = new URI(String.format("http://s.optifine.net/capes/%s.png", player.getName())).toURL();
+            String uuid = player.id().toString();
+            URL capeURL = new URI(String.format("http://s.optifine.net/capes/%s.png", player.name())).toURL();
             CompletableFuture.supplyAsync(() -> {
                 try {
                     return capeURL.openStream();
