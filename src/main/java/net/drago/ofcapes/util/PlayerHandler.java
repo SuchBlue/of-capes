@@ -1,17 +1,17 @@
 package net.drago.ofcapes.util;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.util.Identifier;
-
+import com.mojang.blaze3d.platform.NativeImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.resources.Identifier;
 
 public class PlayerHandler {
     public static Map<String, Identifier> capes = new HashMap<>();
@@ -25,26 +25,20 @@ public class PlayerHandler {
             String uuid = player.id().toString();
             URL capeURL = new URI(String.format("http://s.optifine.net/capes/%s.png", player.name())).toURL();
             CompletableFuture.supplyAsync(() -> {
-                try {
-                    return capeURL.openStream();
+                try (InputStream capeStream = capeURL.openStream()) {
+                    return parseCape(NativeImage.read(capeStream));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-            }).thenAcceptAsync(capeStream -> {
-                NativeImage capeImage;
-                try {
-                    capeImage = parseCape(NativeImage.read(capeStream));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                Identifier capeTexture = Identifier.of("of-capes", uuid);
-                MinecraftClient.getInstance().execute(() -> {
-                    NativeImageBackedTexture nIBT = new NativeImageBackedTexture(() -> "of-capes:" + uuid, capeImage);
-                    MinecraftClient.getInstance().getTextureManager().registerTexture(capeTexture, nIBT);
-                });
+            }).thenAcceptAsync(capeImage -> {
+                Identifier capeTexture = Identifier.fromNamespaceAndPath("of-capes", uuid);
+
+                DynamicTexture nIBT = new DynamicTexture(() -> "of-capes:" + uuid, capeImage);
+                Minecraft.getInstance().getTextureManager().register(capeTexture, nIBT);
+
                 capes.put(uuid, capeTexture);
                 response.response(capeTexture);
-            });
+            }, Minecraft.getInstance());
         } catch (Exception ignored) {}
     }
 
@@ -64,7 +58,7 @@ public class PlayerHandler {
         NativeImage imgNew = new NativeImage(imageWidth, imageHeight, true);
         for (int x = 0; x < imageSrcWidth; x++) {
             for (int y = 0; y < srcHeight; y++) {
-                imgNew.setColorArgb(x, y, image.getColorArgb(x, y));
+                imgNew.setPixel(x, y, image.getPixel(x, y));
             }
         }
         image.close();

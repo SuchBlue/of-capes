@@ -3,17 +3,17 @@ package net.drago.ofcapes.mixin;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.authlib.GameProfile;
 import net.drago.ofcapes.util.PlayerHandler;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.entity.player.SkinTextures;
-import net.minecraft.util.AssetInfo;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.core.ClientAsset;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.PlayerSkin;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(value = PlayerListEntry.class)
+@Mixin(value = PlayerInfo.class)
 public class PlayerListEntryMixin {
     @Shadow
     @Final
@@ -23,11 +23,11 @@ public class PlayerListEntryMixin {
     @Unique
     private Identifier identifier;
 
-    @ModifyReturnValue(method = "getSkinTextures", at = @At("TAIL"))
-    protected SkinTextures changeCapeTexture(SkinTextures original) {
+    @ModifyReturnValue(method = "getSkin", at = @At("TAIL"))
+    protected PlayerSkin changeCapeTexture(PlayerSkin original) {
         if(!loadedCapeTexture) fetchCapeTexture();
 
-        AssetInfo.TextureAsset newTexture = new AssetInfo.TextureAsset() {
+        ClientAsset.Texture newTexture = new ClientAsset.Texture() {
             @Override
             public Identifier texturePath() {
                 return identifier;
@@ -39,7 +39,7 @@ public class PlayerListEntryMixin {
             }
         };
 
-        return new SkinTextures(
+        return new PlayerSkin(
                 original.body(),
                 identifier == null ? original.cape() : newTexture,
                 identifier == null ? original.elytra() : newTexture,
